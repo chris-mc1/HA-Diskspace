@@ -6,10 +6,13 @@ import shutil
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import CONF_ICON, CONF_NAME
+from homeassistant.components.sensor import (
+    PLATFORM_SCHEMA,
+    SensorDeviceClass,
+    SensorEntity,
+)
+from homeassistant.const import CONF_ICON, CONF_NAME, UnitOfInformation
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import Throttle
@@ -57,7 +60,7 @@ def setup_platform(
     )
 
 
-class DiskSpaceSensor(Entity):
+class DiskSpaceSensor(SensorEntity):
     def __init__(self, name: str, path: str, icon: str, uom: str) -> None:
         self._state = None
         self._icon = icon
@@ -65,13 +68,15 @@ class DiskSpaceSensor(Entity):
         self._path = path
         self._uom = uom
         self._name = name
+        self._attr_native_unit_of_measurement = UnitOfInformation.BYTES
+        self._attr_device_class = SensorDeviceClass.DATA_SIZE
 
     @property
     def name(self) -> str:
         return "Disk Space " + self._name
 
     @property
-    def state(self) -> int | None:
+    def native_value(self) -> int | None:
         return self._state
 
     @property
@@ -83,7 +88,7 @@ class DiskSpaceSensor(Entity):
         return self._attributes
 
     @property
-    def unit_of_measurement(self) -> str:
+    def suggested_unit_of_measurement(self) -> str:
         return self._uom
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
@@ -100,22 +105,9 @@ class DiskSpaceSensor(Entity):
         except Exception as err:
             _LOGGER.warning("Other Error: %s", err)
 
-        if self._uom == "GB":
-            self._attributes["total"] = total // (10**9)
-            self._attributes["used"] = used // (10**9)
-            self._attributes["free"] = free // (10**9)
-        elif self._uom == "MB":
-            self._attributes["total"] = total // (10**6)
-            self._attributes["used"] = used // (10**6)
-            self._attributes["free"] = free // (10**6)
-        elif self._uom == "TB":
-            self._attributes["total"] = total // (10**12)
-            self._attributes["used"] = used // (10**12)
-            self._attributes["free"] = free // (10**12)
-        else:
-            self._attributes["total"] = total
-            self._attributes["used"] = used
-            self._attributes["free"] = free
+        self._attributes["total"] = total
+        self._attributes["used"] = used
+        self._attributes["free"] = free
 
         self._attributes["percentage_free"] = round((free / total) * 100, 1)
         self._state = self._attributes["free"]
