@@ -130,7 +130,7 @@ dmypy.json
 /blueprints
 /deps
 /tts
-*.yaml
+/*.yaml
 .HA_VERSION
 home-assistant_v2.*
 home-assistant.*
