@@ -1,0 +1,5 @@
+pip>=21.0
+ruff
+colorlog
+homeassistant==2024.7.1
+homeassistant-stubs
