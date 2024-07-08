@@ -1,3 +1,1 @@
-"""
-Sensor for Local Diskspace
-"""
+"""Sensor for Local Diskspace."""

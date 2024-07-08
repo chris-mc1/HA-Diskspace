@@ -1,13 +1,17 @@
-"""Sensor platform for Local Diskspace"""
+"""Sensor platform for Local Diskspace."""
+
 import datetime
 import logging
 import shutil
 
 import homeassistant.helpers.config_validation as cv
-import voluptuous as vol 
-from homeassistant.components.sensor import PLATFORM_SCHEMA 
-from homeassistant.const import CONF_NAME, CONF_ICON 
+import voluptuous as vol
+from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.const import CONF_ICON, CONF_NAME
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import Throttle
 
 __version__ = "v0.5"
@@ -33,8 +37,14 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
-    "Setup Platform"
+
+def setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
+) -> None:
+    """Setup Platform."""
     add_entities(
         [
             DiskSpaceSensor(
@@ -46,8 +56,9 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         ]
     )
 
+
 class DiskSpaceSensor(Entity):
-    def __init__(self, name: str, path: str, icon: str, uom: str):
+    def __init__(self, name: str, path: str, icon: str, uom: str) -> None:
         self._state = None
         self._icon = icon
         self._attributes = {}
@@ -56,27 +67,27 @@ class DiskSpaceSensor(Entity):
         self._name = name
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "Disk Space " + self._name
 
     @property
-    def state(self):
+    def state(self) -> int | None:
         return self._state
 
     @property
-    def icon(self):
+    def icon(self) -> str:
         return self._icon
 
     @property
-    def state_attributes(self):
+    def state_attributes(self) -> dict:
         return self._attributes
 
     @property
-    def unit_of_measurement(self):
+    def unit_of_measurement(self) -> str:
         return self._uom
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
-    def update(self):
+    def update(self) -> None:
         self._attributes = {}
         self._state = 0
 
@@ -90,17 +101,17 @@ class DiskSpaceSensor(Entity):
             _LOGGER.warning("Other Error: %s", err)
 
         if self._uom == "GB":
-            self._attributes["total"] = total // (10 ** 9)
-            self._attributes["used"] = used // (10 ** 9)
-            self._attributes["free"] = free // (10 ** 9)
+            self._attributes["total"] = total // (10**9)
+            self._attributes["used"] = used // (10**9)
+            self._attributes["free"] = free // (10**9)
         elif self._uom == "MB":
-            self._attributes["total"] = total // (10 ** 6)
-            self._attributes["used"] = used // (10 ** 6)
-            self._attributes["free"] = free // (10 ** 6)
+            self._attributes["total"] = total // (10**6)
+            self._attributes["used"] = used // (10**6)
+            self._attributes["free"] = free // (10**6)
         elif self._uom == "TB":
-            self._attributes["total"] = total // (10 ** 12)
-            self._attributes["used"] = used // (10 ** 12)
-            self._attributes["free"] = free // (10 ** 12)
+            self._attributes["total"] = total // (10**12)
+            self._attributes["used"] = used // (10**12)
+            self._attributes["free"] = free // (10**12)
         else:
             self._attributes["total"] = total
             self._attributes["used"] = used
