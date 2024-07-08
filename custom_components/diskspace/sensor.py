@@ -15,7 +15,6 @@ from homeassistant.const import CONF_ICON, CONF_NAME, UnitOfInformation
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.util import Throttle
 
 __version__ = "v0.5"
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ DEFAULT_UOM = "GB"
 DEFAULT_ICON = "mdi:harddisk"
 DEFAULT_PATH = "/"
 
-MIN_TIME_BETWEEN_UPDATES = datetime.timedelta(seconds=60)
+SCAN_INTERVAL = datetime.timedelta(seconds=60)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -91,7 +90,6 @@ class DiskSpaceSensor(SensorEntity):
     def suggested_unit_of_measurement(self) -> str:
         return self._uom
 
-    @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self) -> None:
         self._attributes = {}
         self._state = 0
